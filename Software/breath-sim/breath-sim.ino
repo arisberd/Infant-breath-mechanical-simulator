@@ -3,18 +3,6 @@
 //version 0.2
 //GNU GPL v3
 
-//Send a program to arduino to make a specific respiratory circle
-//Version G2, to put different volumes and change them with the button
-//Version H2, to reduce the delay when the direction change. To put all the data and change them pressing the button
-//Version I2, has 3 running modes.
-//Version J, endstop
-//Version K, input values through serial monitor
-//Version L, manual input mode
-//Version M, trying to fix the small volumes bug
-//Version N, discovering mircostepping and time correction
-//Version O, multi file system
-//Version P, using new file system, programem
-
 // Define stepper motor connections:
 #define dirPin 12 // CW
 #define stepPin 13 // CLK
@@ -81,10 +69,16 @@ void setup() {
   pinMode(end_stop, INPUT);
   digitalWrite(enaPin, LOW); //disables the stepper driver
   Serial.begin(9600);
-  Serial.println("Welcome to mechanical respirator!");
-  Serial.println("PGNP 2020 ..");
-  Serial.println("https://gitlab.com/aris_berd/respirator/");
+  Serial.println("Welcome to Infant breath mechanical simulator!");
+  Serial.println("PGNP 2021 ..");
+  Serial.println("https://github.com/arisberd/Infant-breath-mechanical-simulator");
   Serial.println();
+  Serial.println("Blue button 1 - next row");
+  Serial.println("Blue button 2 - pause/resume");
+  Serial.println("Red button - hard reset");
+  Serial.println("Any number at serial input make it go to that row after blue button 1 is pressed, ex. 5+enter+blue button goes to row 5");
+  Serial.println();
+  
   vol_size = sizeof(vol) / sizeof(vol[0]);
   data_max_row_num =  sizeof(manual_input) / sizeof(manual_input[0]) / 3; //setting the maximum number of rows
   print_all_rows();
