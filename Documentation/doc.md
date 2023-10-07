@@ -12,7 +12,7 @@ GNU GPL v3
 
 ## Table of contents
 
-[toc]
+[TOC]
 
 ## General
 
