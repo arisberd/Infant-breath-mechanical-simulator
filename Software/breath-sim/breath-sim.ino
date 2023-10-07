@@ -9,15 +9,15 @@
 #define enaPin 11 // EN
 
 //Define buttons and endstop
-#define button_blue_1 5
+#define button_blue_1 5 //changes row (go to next row or to manual-set-row from serial input)
 #define button_blue_2 4
 #define end_stop 7 //end_stop to the syringe
 
 //Configuration ...
-float callibration_vol = 0.95418 ; // callibration factor of the volume (ex 85/80)
+float calibration_vol = 0.95418 ; // callibration factor of the volume (ex 85/80)
 int microsteps = 8; //set the number of microsteps of the stepper motor (ex for 1/4 set to 4, for 1/16 set to 16)
 int starting_volume = -6; //the volume beggining from the end stop switch
-float steps_to_vol = 3.33 * microsteps * callibration_vol; // 166steps for 50 ml volume. Must be set in the first setup. This number is set for 100ml syringe. Changing syringes needs adapt of this variable
+float steps_to_vol = 3.33 * microsteps * calibration_vol; // 166steps for 50 ml volume. Must be set in the first setup. This number is set for 100ml syringe. Changing syringes or motor gear needs adapt of this variable
 
 //Data from file ... WRITE HERE THE FILE YOU WANT TO  UPLOAD
 #include "dataleo2.h"
@@ -70,15 +70,15 @@ void setup() {
   digitalWrite(enaPin, LOW); //disables the stepper driver
   Serial.begin(9600);
   Serial.println("Welcome to Infant breath mechanical simulator!");
-  Serial.println("PGNP 2021 ..");
+  Serial.println("Greece, University Hospiral Of Patras, Pediatric Pulmonology Department, 2021");
   Serial.println("https://github.com/arisberd/Infant-breath-mechanical-simulator");
   Serial.println();
   Serial.println("Blue button 1 - next row");
   Serial.println("Blue button 2 - pause/resume");
   Serial.println("Red button - hard reset");
-  Serial.println("Any number at serial input make it go to that row after blue button 1 is pressed, ex. 5+enter+blue button goes to row 5");
+  Serial.println("You can go to a specific row by writing the row number in the serial monitor and pressing enter. This will take effect after pressing the blue button No1, ex. 5+enter+blue button goes to row 5");
   Serial.println();
-  
+
   vol_size = sizeof(vol) / sizeof(vol[0]);
   data_max_row_num =  sizeof(manual_input) / sizeof(manual_input[0]) / 3; //setting the maximum number of rows
   print_all_rows();
@@ -101,7 +101,7 @@ void setup() {
 
 
 void loop() {
-  check_buttons();
+  check_buttons(); //includes new_row_setup() which includes calculate_steps()
   for (int k = 0; k < vol_size; k++) { // k represents the number of volume position
     if (steps[k] < 0) { //for negative step value, change times
       time_passed[0] = millis();
@@ -110,13 +110,13 @@ void loop() {
       pause_delay = 0;
     }
     else {
-      if (steps[k] != 0) {  //if >0
+      if (steps[k] != 0) {  //if steps[k]>0
         time_passed[2] = millis();
         move_motor(steps[k], te * te_corr_f);
         time_passed[3] = millis() - pause_delay;
         pause_delay = 0;
       }
-      else { //if =0
+      else { //if steps[k]=0
         delay (ti); //if there are no steps in that position, it just waits //from old versions
         //Serial.println("DEBUG-No move");
         //Serial.println(k);
@@ -126,7 +126,7 @@ void loop() {
     }
 
   }
-  time_correction();
+  time_correction(); //corrects small delays because of multiple minor electronic delays
   loops_in_round ++; //counts how many times the loop went in each round
 
 }
