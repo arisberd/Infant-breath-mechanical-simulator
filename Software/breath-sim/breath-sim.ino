@@ -1,6 +1,6 @@
 //Infant-breath-mechanical-simulator
 //https://github.com/arisberd/Infant-breath-mechanical-simulator
-//version 0.2
+//version 0.3
 //GNU GPL v3
 
 // Define stepper motor connections:
@@ -13,15 +13,12 @@
 #define button_blue_2 4
 #define end_stop 7 //end_stop to the syringe
 
-//Configuration ...
+//Configuration:
+//Set this data at the first setup. These are hardware settings.
 float calibration_vol = 0.95418 ; // callibration factor of the volume (ex 85/80)
 int microsteps = 8; //set the number of microsteps of the stepper motor (ex for 1/4 set to 4, for 1/16 set to 16)
 int starting_volume = -6; //the volume beggining from the end stop switch
-float steps_to_vol = 3.33 * microsteps * calibration_vol; // 166steps for 50 ml volume. Must be set in the first setup. This number is set for 100ml syringe. Changing syringes or motor gear needs adapt of this variable
-
-//Data from file ... WRITE HERE THE FILE YOU WANT TO  UPLOAD
-#include "dataleo2.h"
-
+float steps_to_vol = 3.33 * microsteps * calibration_vol; // 166steps for 50 ml volume. This number is set for 100ml syringe. Changing syringes or motor gear needs adapt of this variable
 
 //variables
 float step_count;
@@ -35,21 +32,17 @@ float te; //expiration time
 int data_max_row_num = 0;
 int row_num;
 int new_row_set_input = 0;
-int vol_size; //number of volume values
-int steps[2]; //higher number make a higher  definition move
 float ti_corr_f; //ti and te correction factors
 float te_corr_f;
-unsigned long time_passed[4];
+unsigned long time_passed[3];
 float pause_delay;
 
+//Data from file ... WRITE HERE THE FILE YOU WANT TO  UPLOAD
+#include "dataleo_ae_1.h"
 
-
-//Volume curve data
-//Follows the data entry, vol for volumes, every number represents the volumeposition of every value
-float vol[] = { //vol for volume (to ml)
-  0, 2
-};
-
+//Set last variables of data. Vol_size is defined in datasheets ex. dataleo.h 
+float vol[vol_size];
+int steps[vol_size];
 
 int pmem_manual_input(int point) {
   int my_int = pgm_read_word_near(manual_input + point);
@@ -79,7 +72,6 @@ void setup() {
   Serial.println("You can go to a specific row by writing the row number in the serial monitor and pressing enter. This will take effect after pressing the blue button No1, ex. 5+enter+blue button goes to row 5");
   Serial.println();
 
-  vol_size = sizeof(vol) / sizeof(vol[0]);
   data_max_row_num =  sizeof(manual_input) / sizeof(manual_input[0]) / 3; //setting the maximum number of rows
   print_all_rows();
   Serial.println("Setup finished!!");
@@ -102,30 +94,30 @@ void setup() {
 
 void loop() {
   check_buttons(); //includes new_row_setup() which includes calculate_steps()
-  for (int k = 0; k < vol_size; k++) { // k represents the number of volume position
-    if (steps[k] < 0) { //for negative step value, change times
-      time_passed[0] = millis();
-      move_motor(steps[k], ti * ti_corr_f);
-      time_passed[1] = millis() - pause_delay;
-      pause_delay = 0;
+  
+  //inspiration starts
+  time_passed[0] = millis(); 
+  for (int k = 0; k < insp_curve_point; k++) { 
+    if (steps[k] != 0) {
+      move_motor(steps[k], ti * ti_corr_f / insp_curve_point);
     }
-    else {
-      if (steps[k] != 0) {  //if steps[k]>0
-        time_passed[2] = millis();
-        move_motor(steps[k], te * te_corr_f);
-        time_passed[3] = millis() - pause_delay;
-        pause_delay = 0;
-      }
-      else { //if steps[k]=0
-        delay (ti); //if there are no steps in that position, it just waits //from old versions
-        //Serial.println("DEBUG-No move");
-        //Serial.println(k);
-        //Serial.println(vol_size);
-      }
-
+    else{
+      delay (ti * ti_corr_f/ insp_curve_point);
     }
-
   }
+  time_passed[1] = millis(); //end of inspiration 
+  
+  //expiration starts
+  for (int k = insp_curve_point; k<vol_size;k++) {
+    if (steps[k] != 0) {
+      move_motor(steps[k], te * te_corr_f / (vol_size-insp_curve_point));
+    }
+    else{
+      delay (te * te_corr_f / (vol_size-insp_curve_point));
+    }
+  }
+  time_passed[2] = millis(); //end of expiration
+
   time_correction(); //corrects small delays because of multiple minor electronic delays
   loops_in_round ++; //counts how many times the loop went in each round
 
@@ -277,7 +269,7 @@ void time_correction() {
   float last_ti_corr_f = ti_corr_f;//stores last factors
   float last_te_corr_f = te_corr_f;
   int ti_time_passed = time_passed[1] - time_passed[0]; //calculates real ti and te
-  int te_time_passed = time_passed[3] - time_passed[2];
+  int te_time_passed = time_passed[2] - time_passed[1];
 
   ti_corr_f = last_ti_corr_f * (1 - (ti_time_passed - ti) / ti); //calculates factors
   te_corr_f = last_te_corr_f * (1 - (te_time_passed - te) / te);
@@ -287,11 +279,19 @@ void time_correction() {
 void new_row_setup(int number_of_row) {
 
   ti = pmem_manual_input(number_of_row * 3 + 1);
-  vol[1] = pmem_manual_input(number_of_row * 3 + 0);
+  //vol[1] = pmem_manual_input(number_of_row * 3 + 0); //old version mallon prepei nato sbhso
+  calculate_vols(pmem_manual_input(number_of_row * 3 + 0));
   te_ti_ratio = pmem_manual_input(number_of_row * 3 + 2);
   te =  te_ti_ratio * ti / 100;
   calculate_steps ();
   loops_in_round = 0;
   ti_corr_f = 1;
   te_corr_f = 1;
+
+}
+
+void calculate_vols(float maximum_vol) {
+  for (int i = 0; i < vol_size; i++) {
+    vol[i] = vol_curve[i] / vol_curve_max * maximum_vol ;   
+  }
 }

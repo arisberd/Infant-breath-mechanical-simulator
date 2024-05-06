@@ -16,8 +16,8 @@ This project is about building, developing, documenting and using a mechanical b
 # Documentation
 You will find documentation for construction, configuration and usage under [Documentation/doc.md](https://github.com/arisberd/Infant-breath-mechanical-simulator/blob/main/Documentation/doc.md). 
 
-# Version 0.2
-This is a developing project, but fully functional on predefined settings. You may encounter problems while using new features or trying to modify functions.  
+# Version 0.3
+This is a developing project, but fully functional on predefined settings. You may encounter problems while using new features or trying to modify functions.
 
 # Contribution
 This project started at Pediatric Pulmonology Department of University Hospital of Patras, Greece at 2021. Feel free construct the device, use it or contribute to the project. [Questions and comments](https://github.com/arisberd/Infant-breath-mechanical-simulator/issues) are welcome.

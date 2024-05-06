@@ -114,7 +114,7 @@ Basic module of the project is an [Arduino Uno](https://store.arduino.cc/product
 <img src="Photos/electronics-wiring.png" height = "400"> 
 <img src="Photos/electronics-photo.jpg" height = "400"> 
 
-* The motor's Driver (TB6600A) is connected at arduino digital pins as shown. Driver also connects to a 24 Volt DC current as well as the Stepper Motor. Be sure to adjust Driver's current sparingly, starting at very low currents and slowly increase at first test. You should also check the microstepping setting. The software's default is 1/8 microstepping (can be changed in software, too). At the following pictures, the arrow show the microstepping switches. We used 8 microsteps. Refer to the datasheet for choosing the correct combination for microstepping.
+* The motor's Driver (TB6600A) is connected at arduino digital pins as shown. Driver also connects to a 24 Volt DC current as well as the Stepper Motor. Be sure to adjust Driver's current sparingly, starting at very low currents and slowly increase at first test. Low current will give low torque to the motor, making it not to move at high speed requirements. High current gives high torch, making driver hot and appling lot of torque at the speed changes. You should also check the microstepping setting. The software's default is 1/8 microstepping (can be changed in software, too). At the following pictures, the arrow show the microstepping switches. We used 8 microsteps. Refer to the datasheet for choosing the correct combination for microstepping.
 
 <img src="Photos/TB600A microstepping.png" height = "200"> 
 <img src="Photos/TB6600A datasheet.jpg" height = "200"> 

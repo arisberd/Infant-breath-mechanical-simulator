@@ -35,21 +35,6 @@ int serial_input_integer()  { //return up to 4 digit integer
   }//end of for k
 }
 
-//Module to show at Serial current setting 
-void print_current () {
-  Serial.print(row_num); Serial.print("  ");
-  Serial.print("Te/Ti="); Serial.print(te_ti_ratio); Serial.print("%");
-  //Serial.print("Ti/Te POS="); Serial.println(te_ti_ratio_pos);
-  Serial.print(" Ti="); Serial.print(ti);
-  //Serial.print("Ti POS="); Serial.println(ti_pos);
-  Serial.print(" Te="); Serial.print(te);
-  Serial.print(" Vol="); Serial.print(vol[1]);
-  //Serial.print("Vol POS="); Serial.println(vol_pos);
-  Serial.print(" RR="); Serial.print(60 / ((ti + te) / 1000));
-  Serial.print(" MV="); Serial.println(60 / ((ti + te) / 1000)*vol[2]);
-
-  delay(100);
-}
 
 void print_row (int data_num) {
   int pr_te = pmem_manual_input(data_num*3+1) / 100 * pmem_manual_input(data_num*3+2); //pr_te = temp printing te var
@@ -76,6 +61,7 @@ void print_all_rows() {
 
 
 void print_steps_debug() {
+  Serial.println("Steps:");
   for (int k = 0; k < vol_size; k++) {
     Serial.print(k);
     Serial.print(" ");
@@ -83,18 +69,27 @@ void print_steps_debug() {
   }
 }
 
+void print_calculate_vols_debugger() {
+  Serial.println("Print vols:");
+  for (int k = 0; k < vol_size; k++) {
+    Serial.print(k);
+    Serial.print(" ");
+    Serial.println(vol[k]);
+  }
 
-void time_correction_debug() {
+}
+
+
+
+void print_time_correction_debug() {
   Serial.println(loops_in_round);
   Serial.print("Ti: "); Serial.print(ti);Serial.print(" cTi: "); Serial.println(ti*ti_corr_f);
   Serial.print("Time passed Ti: "); Serial.println(int(time_passed[1]-time_passed[0]));
   Serial.print("Te: "); Serial.print(te);Serial.print(" cTe: "); Serial.println(te*te_corr_f);
-  Serial.print("Time passed Te: "); Serial.println(int(time_passed[3]-time_passed[2]));
-  Serial.print("Te and Ti in (msec): "); Serial.println(int(time_passed[3] - time_passed[0]));
+  Serial.print("Time passed Te: "); Serial.println(int(time_passed[2]-time_passed[1]));
+  Serial.print("Te and Ti in (msec): "); Serial.println(int(time_passed[2] - time_passed[0]));
   Serial.println("");
 }
-
-
 
 
 void button_debugger() {
@@ -106,3 +101,24 @@ void button_debugger() {
     delay(100);
   }
 }
+
+//Module to show at Serial current setting 
+void print_current () {
+  Serial.print(row_num); Serial.print("  ");
+  Serial.print("Te/Ti="); Serial.print(te_ti_ratio); Serial.print("%");
+  //Serial.print("Ti/Te POS="); Serial.println(te_ti_ratio_pos);
+  Serial.print(" Ti="); Serial.print(ti);
+  //Serial.print("Ti POS="); Serial.println(ti_pos);
+  Serial.print(" Te="); Serial.print(te);
+  Serial.print(" Vol="); Serial.print(vol[insp_curve_point]);
+  //Serial.print("Vol POS="); Serial.println(vol_pos);
+  Serial.print(" RR="); Serial.print(60 / ((ti + te) / 1000));
+  Serial.print(" MV="); Serial.println(60 / ((ti + te) / 1000)*vol[insp_curve_point]);
+
+  delay(100);
+
+  delay(100);
+}
+
+
+
